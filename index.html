@@ -497,10 +497,80 @@ body::before{
 .toast i{font-size:18px;flex-shrink:0}
 @keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
 @keyframes toastOut{to{opacity:0;transform:translateY(10px) scale(.97)}}
+
+/* ══════════ AUTH GATE (login / register) ══════════ */
+#auth-gate{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;
+  padding:calc(var(--safe-top) + 24px) 20px calc(var(--safe-bot) + 24px);overflow-y:auto}
+.auth-aura{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(50% 40% at 78% 8%, rgba(99,102,241,.42), transparent 60%),
+    radial-gradient(46% 38% at 14% 20%, rgba(139,92,246,.34), transparent 62%),
+    radial-gradient(60% 46% at 88% 92%, rgba(56,189,248,.2), transparent 62%);
+  filter:saturate(125%);animation:meshDrift 22s ease-in-out infinite alternate}
+.auth-card{position:relative;z-index:1;width:100%;max-width:400px;
+  background:var(--card);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);
+  border:1px solid rgba(255,255,255,.09);border-radius:28px;
+  box-shadow:var(--shadow-lg),0 10px 30px rgba(99,102,241,.16),inset 0 1px 0 rgba(255,255,255,.07);
+  padding:30px 24px 22px;animation:fxRise .5s cubic-bezier(.22,.61,.36,1) both}
+.auth-logo{width:64px;height:64px;border-radius:20px;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;
+  background:var(--acc-grad);box-shadow:0 12px 30px rgba(99,102,241,.5),inset 0 1px 0 rgba(255,255,255,.35)}
+.auth-title{text-align:center;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.auth-sub{text-align:center;font-size:12.5px;color:var(--t2);margin-top:5px;line-height:1.6}
+.auth-tabs{display:flex;background:rgba(255,255,255,.05);border-radius:14px;padding:4px;gap:3px;margin:20px 0 16px}
+.auth-tab{flex:1;padding:11px;border:none;border-radius:10px;background:none;cursor:pointer;
+  font-family:inherit;font-size:13px;font-weight:700;color:var(--t3);transition:all .18s}
+.auth-tab.on{background:var(--acc-grad);color:#fff;box-shadow:0 6px 16px rgba(99,102,241,.4)}
+.auth-fg{margin-bottom:12px}
+.auth-err{color:var(--r);font-size:12px;font-weight:600;min-height:16px;margin:2px 2px 8px;
+  display:flex;align-items:center;gap:5px;line-height:1.5}
+.auth-err:empty{display:none}
+.auth-submit{margin-top:6px}
+.auth-submit.loading{opacity:.7;pointer-events:none}
+.auth-guest{width:100%;margin-top:14px;padding:11px;border:none;background:none;cursor:pointer;
+  font-family:inherit;font-size:12.5px;color:var(--t3);display:flex;align-items:center;
+  justify-content:center;gap:6px;min-height:44px}
+.auth-guest:active{color:var(--t2)}
+.auth-guest i{font-size:16px}
 </style>
 </head>
 <body>
-<div id="app">
+
+<!-- ════════════════ AUTH GATE (login / register) ════════════════ -->
+<div id="auth-gate">
+  <div class="auth-aura"></div>
+  <div class="auth-card">
+    <div class="auth-logo"><i class="ti ti-notebook"></i></div>
+    <h1 class="auth-title">دفتر حساب</h1>
+    <p class="auth-sub" id="auth-sub">وارد شو تا حساب‌ها و کارت خودت را ببینی</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab on" id="atab-login" type="button" onclick="AUTH.mode('login')">ورود</button>
+      <button class="auth-tab" id="atab-reg" type="button" onclick="AUTH.mode('reg')">ثبت‌نام</button>
+    </div>
+
+    <form id="auth-form" onsubmit="return AUTH.submit(event)" autocomplete="on">
+      <div class="fg auth-fg" id="afg-name" style="display:none">
+        <label>نام نمایشی</label>
+        <input class="fi" id="a-name" placeholder="مثلاً: علی رضایی" autocomplete="name">
+      </div>
+      <div class="fg auth-fg">
+        <label>نام کاربری</label>
+        <input class="fi" id="a-user" placeholder="حروف/عدد انگلیسی" autocomplete="username" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="fg auth-fg">
+        <label>رمز عبور</label>
+        <input class="fi" id="a-pass" type="password" placeholder="حداقل ۶ کاراکتر" autocomplete="current-password">
+      </div>
+      <div class="auth-err" id="auth-err"></div>
+      <button class="btn-sub bs-save auth-submit" id="auth-btn" type="submit"><i class="ti ti-login-2"></i><span id="auth-btn-tx">ورود</span></button>
+    </form>
+
+    <button class="auth-guest" type="button" onclick="AUTH.guest()"><i class="ti ti-user-off"></i>ادامه بدون حساب (فقط این دستگاه)</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
 
 <!-- ════ DASHBOARD ════ -->
 <div id="pg-dash" class="page on">
@@ -739,6 +809,20 @@ body::before{
       </p>
     </div>
   </div>
+  <div class="cfg-card">
+    <div class="cfg-ttl">حساب کاربری</div>
+    <div class="cfg-body">
+      <div id="cfg-account" style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+        <div class="pavatar" id="cfg-ava" style="width:44px;height:44px;font-size:15px;background:var(--acc-grad)">؟</div>
+        <div style="flex:1;min-width:0">
+          <div id="cfg-uname" style="font-weight:800;font-size:15px">مهمان</div>
+          <div id="cfg-ustate" style="font-size:11px;color:var(--t3);margin-top:2px">فقط روی این دستگاه</div>
+        </div>
+        <span id="cfg-sync" style="font-size:11px;color:var(--g-d);display:none"><i class="ti ti-cloud-check"></i></span>
+      </div>
+      <button class="btn-ghost" id="cfg-logout" onclick="AUTH.logout()" style="display:none"><i class="ti ti-logout"></i> خروج از حساب</button>
+    </div>
+  </div>
   <div class="cfg-card" style="border-color:rgba(244,63,94,.2);margin-bottom:1rem">
     <div class="cfg-ttl" style="color:var(--r)">منطقه خطر</div>
     <div class="cfg-body">
@@ -758,6 +842,15 @@ body::before{
 </div>
 
 <script>
+/* ── تنظیمات سرور ──
+   • اگر اپ را از همان سرور Node باز می‌کنی (پوشه public)، خالی بگذار: ''
+   • اگر فایل HTML جداست، آدرس کامل بک‌اند را بگذار، مثل:
+       window.LEDGER_API = 'https://api.your-site.com';
+   • اگر کلاً خالی/تعریف‌نشده بماند، اپ در «حالت آفلاین محلی» کار می‌کند
+     (ثبت‌نام/ورود روی همین مرورگر، بدون نیاز به سرور).                */
+window.LEDGER_API = '';
+</script>
+<script>
 var APP=(function(){
   'use strict';
 
@@ -765,6 +858,7 @@ var APP=(function(){
   var txType='e',editId=null,curPage='dash',prevPage='dash',returnPage='dash',curParty=null;
   var partySort='debt',txFilter='all';
   var ST='lg3_txs',SC='lg3_card';
+  function setStoreUser(uid){ST='lg3_txs_'+uid;SC='lg3_card_'+uid;}
   var PROFIT_PARTY='سودها';
 
   function $(id){return document.getElementById(id);}
@@ -802,7 +896,20 @@ var APP=(function(){
   }
   function normalizeAll(){txs=(Array.isArray(txs)?txs:[]).map(normalizeTx).filter(Boolean);card=card&&typeof card==='object'?card:{name:'کارت محصولات',init:0};card.name=cleanText(card.name,'کارت محصولات');card.init=nval(card.init);}
   function load(){try{txs=JSON.parse(localStorage.getItem(ST)||'[]');}catch(e){txs=[];}try{var c=JSON.parse(localStorage.getItem(SC)||'null');if(c)card=c;}catch(e){}normalizeAll();}
-  function save(){try{localStorage.setItem(ST,JSON.stringify(txs));localStorage.setItem(SC,JSON.stringify(card));}catch(e){notify('خطا در ذخیره! اگر حافظه مرورگر پر شده، یک بکاپ بگیر و داده‌های اضافی را پاک کن.');}}
+  var _syncTimer=null;
+  function save(){
+    try{localStorage.setItem(ST,JSON.stringify(txs));localStorage.setItem(SC,JSON.stringify(card));}
+    catch(e){notify('خطا در ذخیره! اگر حافظه مرورگر پر شده، یک بکاپ بگیر و داده‌های اضافی را پاک کن.');}
+    if(window.AUTH&&AUTH.isOnline()){clearTimeout(_syncTimer);_syncTimer=setTimeout(function(){AUTH.push(txs,card);},700);}
+  }
+  // AUTH پس از دریافت دیتای سرور این را صدا می‌زند تا اپ با داده کاربر پر و رفرش شود
+  function hydrate(serverTxs,serverCard){
+    if(Array.isArray(serverTxs))txs=serverTxs;
+    if(serverCard&&typeof serverCard==='object')card=serverCard;
+    normalizeAll();
+    try{localStorage.setItem(ST,JSON.stringify(txs));localStorage.setItem(SC,JSON.stringify(card));}catch(e){}
+    render();
+  }
 
   function sortKey(t){return (t.type==='s'&&t.status==='paid'&&t.paidTs)?Number(t.paidTs):Number(t.id);}
   function displayDate(t){return (t.type==='s'&&t.status==='paid'&&t.paidAt)?t.paidAt:t.date;}
@@ -1157,8 +1264,177 @@ var APP=(function(){
   function importData(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){try{var d=JSON.parse(e.target.result);if(!d||!Array.isArray(d.txs)||!d.card){notify('فایل بکاپ معتبر نیست');return;}if(!confirm('داده‌های فعلی جایگزین میشه. ادامه میدی؟'))return;txs=d.txs;card=d.card;normalizeAll();save();render();go('dash');notify('✓ بکاپ با موفقیت بازیابی شد');}catch(err){notify('خطا در خواندن فایل');}};r.readAsText(f);inp.value='';}
   function clearAll(){if(!confirm('مطمئنی؟ همه تراکنش‌ها پاک میشه!'))return;txs=[];save();render();}
 
-  load();render();
-  return{go:go,setType:setType,setSort:setSort,setFilter:setFilter,showPendNote:showPendNote,partyInput:partyInput,pickParty:pickParty,closeDrop:closeDrop,convertCredit:convertCredit,submit:submit,cancelAdd:cancelAdd,markPaid:markPaid,del:del,openEdit:openEdit,openParty:openParty,saveCfg:saveCfg,exportData:exportData,importData:importData,clearAll:clearAll,updateDepositPendingList:updPendWarn,renderAll:renderAll,renderParties:renderParties};
+  // boot: توسط لایه AUTH بعد از ورود صدا زده می‌شود (با شناسه کاربر برای فضای جدا)
+  function boot(uid){
+    if(uid!=null)setStoreUser(uid);
+    // مهاجرت یک‌باره: اگر دیتای نسخه قدیمی (بدون پروفایل) هست و فضای این کاربر خالی است، منتقلش کن
+    try{
+      if(!localStorage.getItem(ST)&&localStorage.getItem('lg3_txs')){
+        localStorage.setItem(ST,localStorage.getItem('lg3_txs'));
+        if(localStorage.getItem('lg3_card'))localStorage.setItem(SC,localStorage.getItem('lg3_card'));
+        localStorage.removeItem('lg3_txs');localStorage.removeItem('lg3_card');
+      }
+    }catch(e){}
+    load();render();go('dash');
+  }
+  return{go:go,setType:setType,setSort:setSort,setFilter:setFilter,showPendNote:showPendNote,partyInput:partyInput,pickParty:pickParty,closeDrop:closeDrop,convertCredit:convertCredit,submit:submit,cancelAdd:cancelAdd,markPaid:markPaid,del:del,openEdit:openEdit,openParty:openParty,saveCfg:saveCfg,exportData:exportData,importData:importData,clearAll:clearAll,updateDepositPendingList:updPendWarn,renderAll:renderAll,renderParties:renderParties,boot:boot,hydrate:hydrate,setStoreUser:setStoreUser};
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════
+     AUTH LAYER — accounts, login/register, cloud sync
+     برای حالت آفلاین بدون سرور هم کار می‌کند (حالت مهمان)
+     ════════════════════════════════════════════════════════════ -->
+<script>
+var AUTH=(function(){
+  'use strict';
+  // آدرس سرور: اگر اپ و سرور روی یک دامنه‌اند خالی بگذار؛ در غیر این صورت آدرس کامل بک‌اند را بگذار
+  var API=(window.LEDGER_API||'').replace(/\/$/,'');
+  var TOKEN_KEY='lg3_token',USER_KEY='lg3_user';
+  var mode='login',token=null,user=null;
+
+  function $(id){return document.getElementById(id);}
+  function online(){return !!(API||token);} // اگر API تنظیم شده یا توکن داریم، آنلاین‌ایم
+  function setErr(m){var e=$('auth-err');if(e)e.innerHTML=m?'<i class="ti ti-alert-circle"></i>'+m:'';}
+  function loading(on){var b=$('auth-btn');if(b)b.classList.toggle('loading',on);}
+
+  function api(path,opts){
+    opts=opts||{};var h={'Content-Type':'application/json'};
+    if(token)h['Authorization']='Bearer '+token;
+    return fetch(API+path,{method:opts.method||'GET',headers:h,body:opts.body?JSON.stringify(opts.body):undefined})
+      .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j&&j.error||('خطای سرور ('+r.status+')'));return j;});});
+  }
+
+  function setMode(m){
+    mode=m;
+    $('atab-login').classList.toggle('on',m==='login');
+    $('atab-reg').classList.toggle('on',m==='reg');
+    $('afg-name').style.display=m==='reg'?'':'none';
+    $('auth-btn-tx').textContent=m==='reg'?'ساخت حساب':'ورود';
+    $('a-pass').setAttribute('autocomplete',m==='reg'?'new-password':'current-password');
+    $('auth-sub').textContent=m==='reg'?'یک حساب بساز تا دیتات روی همه دستگاه‌ها همگام بماند':'وارد شو تا حساب‌ها و کارت خودت را ببینی';
+    setErr('');
+  }
+
+  function showGate(show){
+    $('auth-gate').style.display=show?'flex':'none';
+    $('app').style.display=show?'none':'';
+  }
+
+  // نمایش وضعیت حساب در تنظیمات
+  function paintAccount(){
+    var nm=user?(user.name||user.username):'مهمان';
+    var ava=$('cfg-ava'),un=$('cfg-uname'),us=$('cfg-ustate'),lo=$('cfg-logout'),sy=$('cfg-sync');
+    if(un)un.textContent=nm;
+    if(ava)ava.textContent=(String(nm).trim().slice(0,2)||'؟');
+    if(us)us.textContent=user?('نام کاربری: '+user.username):'مهمان — فقط روی این دستگاه';
+    if(lo)lo.style.display=user?'':'none';
+    if(sy)sy.style.display=user?'':'none';
+  }
+
+  function enter(u){
+    user=u;
+    if(u){
+      localStorage.setItem(USER_KEY,JSON.stringify(u));
+      if(token)localStorage.setItem(TOKEN_KEY,token);
+    }
+    var uid=u?u.id:'guest';
+    APP.boot(uid);           // فضای دیتای جدا برای این کاربر
+    showGate(false);
+    paintAccount();
+    if(u&&online()){pull();} // دیتای ابری را بگیر
+  }
+
+  // گرفتن دیتای کاربر از سرور و ادغام با اپ
+  function pull(){
+    api('/api/data').then(function(j){
+      // اگر سرور دیتا دارد از آن استفاده کن؛ اگر خالی است، دیتای محلی فعلی را بالا بفرست
+      if(j&&j.data&&(Array.isArray(j.data.txs)&&j.data.txs.length||j.data.card)){
+        APP.hydrate(j.data.txs,j.data.card);
+      }else{
+        var lt=JSON.parse(localStorage.getItem('lg3_txs_'+user.id)||'[]');
+        var lc=JSON.parse(localStorage.getItem('lg3_card_'+user.id)||'null');
+        if(lt.length||lc)push(lt,lc);
+      }
+      var sy=$('cfg-sync');if(sy)sy.innerHTML='<i class="ti ti-cloud-check"></i> همگام';
+    }).catch(function(){/* آفلاین: با کش محلی ادامه بده */});
+  }
+
+  // فرستادن دیتا به سرور (از داخل APP.save صدا زده می‌شود)
+  function push(txs,card){
+    if(!user||!online())return;
+    var sy=$('cfg-sync');if(sy)sy.innerHTML='<i class="ti ti-cloud-up"></i> در حال ذخیره…';
+    api('/api/data',{method:'PUT',body:{data:{txs:txs,card:card}}})
+      .then(function(){if(sy)sy.innerHTML='<i class="ti ti-cloud-check"></i> همگام';})
+      .catch(function(){if(sy)sy.innerHTML='<i class="ti ti-cloud-off"></i> آفلاین';});
+  }
+
+  function submit(e){
+    e.preventDefault();setErr('');
+    var username=(($('a-user').value||'').trim()).toLowerCase();
+    var pass=$('a-pass').value||'';
+    var name=($('a-name').value||'').trim();
+    if(!/^[a-z0-9_.]{3,20}$/.test(username)){setErr('نام کاربری باید ۳ تا ۲۰ حرف/عدد انگلیسی باشد');return false;}
+    if(pass.length<6){setErr('رمز عبور حداقل ۶ کاراکتر باشد');return false;}
+
+    // بدون سرور: حالت آفلاین محلی (اکانت روی همین مرورگر)
+    if(!API){return localAuth(username,pass,name);}
+
+    loading(true);
+    var path=mode==='reg'?'/api/register':'/api/login';
+    api(path,{method:'POST',body:{username:username,password:pass,name:name||username}})
+      .then(function(j){token=j.token;enter(j.user);})
+      .catch(function(err){setErr(err.message||'خطا در ارتباط با سرور');})
+      .then(function(){loading(false);});
+    return false;
+  }
+
+  // احراز هویت محلی (وقتی سرور نداری) — پسورد با SHA-256 هش می‌شود، فقط روی همین دستگاه
+  function localAuth(username,pass,name){
+    return sha256(pass).then(function(ph){
+      var db={};try{db=JSON.parse(localStorage.getItem('lg3_users')||'{}');}catch(e){}
+      if(mode==='reg'){
+        if(db[username]){setErr('این نام کاربری قبلاً ثبت شده');return;}
+        db[username]={id:'u_'+username,username:username,name:name||username,ph:ph};
+        localStorage.setItem('lg3_users',JSON.stringify(db));
+        enter({id:db[username].id,username:username,name:db[username].name});
+      }else{
+        var rec=db[username];
+        if(!rec||rec.ph!==ph){setErr('نام کاربری یا رمز اشتباه است');return;}
+        enter({id:rec.id,username:rec.username,name:rec.name});
+      }
+    });
+  }
+
+  function guest(){token=null;enter(null);}
+
+  function logout(){
+    token=null;user=null;
+    localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(USER_KEY);
+    setMode('login');$('a-user').value='';$('a-pass').value='';$('a-name').value='';
+    showGate(true);
+  }
+
+  function sha256(str){
+    if(window.crypto&&crypto.subtle){
+      return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str)).then(function(buf){
+        return Array.prototype.map.call(new Uint8Array(buf),function(b){return b.toString(16).padStart(2,'0');}).join('');
+      });
+    }
+    // fallback خیلی ساده اگر SubtleCrypto نبود
+    var h=0;for(var i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;return Promise.resolve('f'+h);
+  }
+
+  // ── boot: بازیابی نشست ──
+  function init(){
+    try{user=JSON.parse(localStorage.getItem(USER_KEY)||'null');}catch(e){user=null;}
+    token=localStorage.getItem(TOKEN_KEY)||null;
+    if(user){enter(user);}          // نشست قبلی برقرار است
+    else{showGate(true);setMode('login');}
+  }
+  init();
+
+  return{mode:setMode,submit:submit,guest:guest,logout:logout,push:push,isOnline:online};
 })();
 </script>
 
