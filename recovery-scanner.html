@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>نجات اطلاعات دفتر حسابداری</title>
+<style>
+:root{--bg:#0f172a;--card:#111827;--card2:#1f2937;--text:#fff;--muted:#cbd5e1;--line:rgba(255,255,255,.12);--blue:#38bdf8;--green:#34d399;--red:#fb7185;--orange:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#020617,#111827 55%,#0f172a);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;line-height:1.7;padding:18px;min-height:100vh}.wrap{max-width:880px;margin:0 auto}.hero{padding:22px;border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.06);box-shadow:0 18px 50px rgba(0,0,0,.25)}h1{font-size:25px;margin:0 0 8px}p{margin:8px 0;color:var(--muted)}.danger{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.35);color:#ffe4e6;border-radius:16px;padding:12px;margin-top:14px}.grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}.card{border:1px solid var(--line);border-radius:18px;background:rgba(17,24,39,.78);padding:14px}.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.btn{appearance:none;border:0;border-radius:14px;padding:12px 14px;min-height:46px;color:#00111c;background:var(--blue);font-weight:800;font-size:15px;cursor:pointer}.btn.green{background:var(--green)}.btn.orange{background:var(--orange)}.btn.red{background:var(--red);color:#fff}.btn.gray{background:#334155;color:#fff}.btn:disabled{opacity:.45}.stat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pill{background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:14px;padding:10px}.pill b{display:block;font-size:20px}textarea{width:100%;min-height:170px;border-radius:14px;border:1px solid var(--line);background:#020617;color:#d1fae5;padding:12px;direction:ltr;text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}.list{display:flex;flex-direction:column;gap:10px}.item{border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:14px;padding:12px}.item.good{border-color:rgba(52,211,153,.5)}.item.warn{border-color:rgba(251,191,36,.5)}.item .top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}.key{font-family:ui-monospace,Menlo,monospace;direction:ltr;text-align:left;word-break:break-all;color:#bae6fd}.small{font-size:12px;color:var(--muted)}select,input{width:100%;min-height:46px;border-radius:14px;border:1px solid var(--line);background:#020617;color:#fff;padding:10px;margin-top:8px}.hidden{display:none}.ok{color:#86efac}.bad{color:#fda4af}.muted{color:var(--muted)}
+@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}.stat{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>🛟 ابزار نجات اطلاعات دفتر حسابداری</h1>
+    <p>این فایل را باید روی <b>همان دامنه Netlify</b> برنامه اصلی باز کنی تا بتواند localStorage همان سایت را بخواند.</p>
+    <div class="danger">قبل از استفاده: تراکنش جدید ثبت نکن، دوباره بازیابی نزن، History/Website Data را پاک نکن. اول اسکن بگیر و خروجی را دانلود کن.</div>
+    <div class="btns">
+      <button class="btn" onclick="scan()">۱) اسکن کامل مرورگر</button>
+      <button class="btn green" onclick="downloadScan()">۲) دانلود خروجی نجات</button>
+      <button class="btn orange" onclick="showRestorePanel()">۳) دکمه برگشت / Restore</button>
+      <button class="btn gray" onclick="history.back()">برگشت مرورگر</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>خلاصه اسکن</h2>
+      <div class="stat">
+        <div class="pill"><span>کلیدها</span><b id="stKeys">-</b></div>
+        <div class="pill"><span>کل تراکنش‌های پیدا شده</span><b id="stTxs">-</b></div>
+        <div class="pill"><span>نسخه‌های تاریخچه</span><b id="stHist">-</b></div>
+        <div class="pill"><span>بهترین گزینه برگشت</span><b id="stBest">-</b></div>
+      </div>
+      <p id="msg" class="small">هنوز اسکن انجام نشده.</p>
+    </div>
+
+    <div class="card hidden" id="restorePanel">
+      <h2>برگشت اضطراری</h2>
+      <p>یک نسخه را انتخاب کن. قبل از جایگزینی، ابزار از وضعیت فعلی یک snapshot اضطراری می‌گیرد.</p>
+      <select id="restoreSelect"></select>
+      <div class="btns">
+        <button class="btn red" onclick="restoreSelected()">برگرداندن نسخه انتخابی</button>
+        <button class="btn gray" onclick="exportSelectedBackup()">دانلود بکاپ نسخه انتخابی</button>
+      </div>
+      <p class="small">اگر مطمئن نیستی، اول «دانلود بکاپ نسخه انتخابی» را بزن و فایل را برای بررسی نگه دار.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>نسخه‌های پیدا شده</h2>
+    <div id="found" class="list"><div class="item muted">اسکن را بزن.</div></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>خروجی خام برای ارسال/نگهداری</h2>
+    <textarea id="raw" readonly></textarea>
+  </div>
+</div>
+<script>
+let SCAN=null, CANDIDATES=[];
+function safeParse(v){try{return JSON.parse(v)}catch(e){return null}}
+function now(){return new Date().toISOString()}
+function txCount(x){return x&&Array.isArray(x.txs)?x.txs.length:(Array.isArray(x)?x.length:0)}
+function getCardForKey(k){let ck=k.replace('txs','card');return safeParse(localStorage.getItem(ck))||safeParse(localStorage.getItem('lg3_card'))||{name:'کارت محصولات',init:0}}
+function addCandidate(type,key,obj,label,ts){
+  let txs=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.txs)?obj.txs:null); if(!txs)return;
+  let card=(obj&&obj.card)||getCardForKey(key)||{name:'کارت محصولات',init:0};
+  CANDIDATES.push({type,key,label:label||type,ts:ts||'',count:txs.length,card,txs});
+}
+function scan(){
+  CANDIDATES=[]; let keys=[], raw={scanDate:now(),href:location.href,origin:location.origin,userAgent:navigator.userAgent,items:{}};
+  for(let i=0;i<localStorage.length;i++){let k=localStorage.key(i); keys.push(k)}
+  keys.sort();
+  keys.forEach(k=>{let v=localStorage.getItem(k); raw.items[k]={length:v?v.length:0,preview:v?String(v).slice(0,300):'',value:v};
+    let obj=safeParse(v);
+    if(/^lg3_txs/.test(k) && Array.isArray(obj)) addCandidate('localStorage',k,obj,'داده مستقیم '+k,'');
+    if(/^lg3_last_before_restore_/.test(k) && obj) addCandidate('before_restore',k,obj,'قبل از بازیابی اشتباه',obj.ts);
+    if(/^lg3_history_/.test(k) && Array.isArray(obj)) obj.forEach((snap,idx)=>addCandidate('history',k,snap,'تاریخچه '+idx+' از '+k,snap&&snap.ts));
+    if(obj&&Array.isArray(obj.history)) obj.history.forEach((snap,idx)=>addCandidate('exported_history',k,snap,'history file '+idx,snap&&snap.ts));
+  });
+  CANDIDATES.sort((a,b)=>(b.count-a.count)||String(b.ts).localeCompare(String(a.ts)));
+  SCAN={...raw,candidates:CANDIDATES.map(c=>({type:c.type,key:c.key,label:c.label,ts:c.ts,count:c.count,card:c.card,txs:c.txs}))};
+  render();
+}
+function render(){
+  document.getElementById('stKeys').textContent=Object.keys(SCAN.items).length;
+  document.getElementById('stTxs').textContent=CANDIDATES.reduce((m,c)=>Math.max(m,c.count),0);
+  document.getElementById('stHist').textContent=CANDIDATES.filter(c=>c.type==='history'||c.type==='before_restore'||c.type==='exported_history').length;
+  document.getElementById('stBest').textContent=CANDIDATES[0]?CANDIDATES[0].count+' تراکنش':'هیچ';
+  document.getElementById('msg').innerHTML=CANDIDATES.length?'<span class="ok">چند گزینه پیدا شد. معمولاً گزینه‌ای که تعداد تراکنش بیشتری دارد بهترین شانس است.</span>':'<span class="bad">هیچ نسخه تراکنشی پیدا نشد؛ خروجی اسکن را نگه دار.</span>';
+  document.getElementById('raw').value=JSON.stringify(SCAN,null,2);
+  let f=document.getElementById('found'); f.innerHTML='';
+  CANDIDATES.forEach((c,i)=>{let d=document.createElement('div');d.className='item '+(i===0?'good':'');d.innerHTML='<div class="top"><div><b>'+(i===0?'⭐ بهترین گزینه احتمالی':'گزینه')+' #'+i+'</b><div class="key">'+esc(c.key)+'</div><div class="small">'+esc(c.label)+' — '+(c.ts?esc(c.ts)+' — ':'')+c.count+' تراکنش</div></div><button class="btn green" onclick="quickRestore('+i+')">برگردان</button></div>';f.appendChild(d)});
+  if(!CANDIDATES.length)f.innerHTML='<div class="item warn">فعلاً تراکنشی در کلیدهای قابل خواندن پیدا نشد. اگر Safari صفحه قبلی را در History نگه داشته باشد، دکمه «برگشت مرورگر» را امتحان کن؛ ولی History معمولاً localStorage قبلی را برنمی‌گرداند.</div>';
+  fillSelect();
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
+function fillSelect(){let sel=document.getElementById('restoreSelect');sel.innerHTML='';CANDIDATES.forEach((c,i)=>{let o=document.createElement('option');o.value=i;o.textContent='#'+i+' — '+c.count+' تراکنش — '+c.label+' — '+(c.ts||c.key);sel.appendChild(o)})}
+function showRestorePanel(){if(!SCAN)scan();document.getElementById('restorePanel').classList.remove('hidden');fillSelect();window.scrollTo({top:0,behavior:'smooth'})}
+function backupCurrent(){try{let uid='guest';let u=safeParse(localStorage.getItem('lg3_user')||'null'); if(u&&u.id)uid=u.id; let ST=localStorage.getItem('lg3_txs_'+uid)?'lg3_txs_'+uid:(localStorage.getItem('lg3_txs_guest')?'lg3_txs_guest':'lg3_txs'); let SC=ST.replace('txs','card'); let cur={ts:now(),label:'قبل از برگشت با recovery-scanner',txs:safeParse(localStorage.getItem(ST)||'[]')||[],card:safeParse(localStorage.getItem(SC)||'null')}; let hk='lg3_history_'+ST; let hist=safeParse(localStorage.getItem(hk)||'[]')||[]; hist.push(cur); localStorage.setItem(hk,JSON.stringify(hist));}catch(e){}}
+function targetKeys(){let user=safeParse(localStorage.getItem('lg3_user')||'null'); if(user&&user.id)return ['lg3_txs_'+user.id,'lg3_card_'+user.id]; if(localStorage.getItem('lg3_txs_guest')||localStorage.getItem('lg3_card_guest'))return ['lg3_txs_guest','lg3_card_guest']; return ['lg3_txs','lg3_card'];}
+function quickRestore(i){document.getElementById('restoreSelect').value=i;restoreSelected()}
+function restoreSelected(){if(!SCAN)scan();let i=Number(document.getElementById('restoreSelect').value);let c=CANDIDATES[i];if(!c){alert('گزینه‌ای انتخاب نشده');return} if(!confirm('این نسخه با '+c.count+' تراکنش جایگزین داده فعلی شود؟'))return; backupCurrent(); let [ST,SC]=targetKeys(); localStorage.setItem(ST,JSON.stringify(c.txs)); localStorage.setItem(SC,JSON.stringify(c.card||{name:'کارت محصولات',init:0})); alert('انجام شد. حالا برنامه اصلی را باز/رفرش کن. اگر درست بود فوراً دانلود بکاپ بگیر.');}
+function downloadObj(obj,name){let blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function downloadScan(){if(!SCAN)scan();downloadObj(SCAN,'ledger-localStorage-scan-'+Date.now()+'.json')}
+function exportSelectedBackup(){if(!SCAN)scan();let i=Number(document.getElementById('restoreSelect').value);let c=CANDIDATES[i];if(!c){alert('گزینه‌ای انتخاب نشده');return}downloadObj({version:12,exportDate:now(),card:c.card,txs:c.txs},'ledger-recovered-'+c.count+'tx-'+Date.now()+'.json')}
+scan();
+</script>
+</body>
+</html>
